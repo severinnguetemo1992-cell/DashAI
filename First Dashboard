@@ -1,0 +1,40 @@
+# pip install dash
+from dash import Dash, dcc, html, Input, Output
+import plotly.express as px
+import pandas as pd
+
+# Données
+df = pd.DataFrame({
+    "Fruit": ["Pommes", "Oranges", "Bananes", "Pommes", "Oranges", "Bananes"],
+    "Quantité": [4, 1, 2, 2, 4, 5],
+    "Ville": ["SF", "SF", "SF", "Montréal", "Montréal", "Montréal"]
+})
+
+# Initialiser l'app Dash
+app = Dash(__name__)
+
+# Le "layout" de l'application (le HTML)
+app.layout = html.Div([
+    html.H1("Dashboard Interactif de Fruits"),
+    dcc.Dropdown(
+        id='ville-dropdown',
+        options=[{'label': c, 'value': c} for c in df['Ville'].unique()],
+        value='SF' # Valeur par défaut
+    ),
+    dcc.Graph(id='fruit-graph') # Le graphique sera affiché ici
+])
+
+# Le "callback" : la magie de Dash
+# Il met à jour le graphique quand le dropdown change
+@app.callback(
+    Output('fruit-graph', 'figure'),
+    Input('ville-dropdown', 'value')
+)
+def update_graph(ville_selectionnee):
+    df_filtered = df[df.Ville == ville_selectionnee]
+    fig = px.bar(df_filtered, x="Fruit", y="Quantité", color="Fruit")
+    return fig
+
+# Lancer le serveur
+if __name__ == '__main__':
+    app.run_server(debug=True)
